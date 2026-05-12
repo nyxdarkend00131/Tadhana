@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tadhana — Edit Reading</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;1,400&family=Noto+Sans+Tagalog&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg1:#150d2e; --bg2:#1e1245;
+      --gold:#f5c842; --gold-l:#fde68a; --gold-d:#a07c1e;
+      --gold-dim:rgba(245,200,66,0.12); --gold-glow:rgba(245,200,66,0.25);
+      --text:#e2d5f8; --text-m:#9d8ec2; --text-d:#5c4f7a;
+      --border:rgba(245,200,66,0.15); --border-h:rgba(245,200,66,0.35);
+      --card-bg:rgba(30,18,69,0.7); --input-bg:#2d1b69; --input-bg-h:#3b2480;
+      --red:#ff3366; --green:#4ade80; --radius:14px;
+    }
+    html,body{height:100%;}
+    body{font-family:'Crimson Text',Georgia,serif;background:linear-gradient(160deg,#0d0720 0%,#150d2e 35%,#1a0f3d 65%,#0a0518 100%);min-height:100vh;color:var(--text);overflow-x:hidden;}
+    .bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(124,58,237,0.18) 0%,transparent 65%);}
+    .stars-layer{position:fixed;inset:0;pointer-events:none;z-index:0;}
+    .star{position:absolute;border-radius:50%;background:rgba(255,255,255,0.85);animation:tw var(--d,3s) ease-in-out infinite var(--dl,0s);}
+    @keyframes tw{0%,100%{opacity:var(--lo,.1);}50%{opacity:var(--hi,.7);}}
+    nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(13,7,32,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+    .nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
+    .nav-baybayin{font-family:'Noto Sans Tagalog',serif;font-size:1.4rem;color:var(--gold);text-shadow:0 0 16px rgba(245,200,66,0.5);}
+    .nav-title{font-family:'Cinzel Decorative',serif;font-size:0.75rem;letter-spacing:6px;color:var(--gold);}
+    .nav-links{display:flex;align-items:center;gap:8px;}
+    .nav-link{font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:3px;color:var(--text-m);text-decoration:none;padding:8px 16px;border-radius:50px;transition:color .2s,background .2s;text-transform:uppercase;}
+    .nav-link:hover{color:var(--gold-l);background:var(--gold-dim);}
+    .nav-user{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:2px;color:var(--gold-d);padding:8px 16px;}
+    .nav-avatar{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--gold-d);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:0.7rem;color:var(--gold);cursor:pointer;}
+    .nav-avatar:hover{border-color:var(--gold);}
+    .page{position:relative;z-index:10;max-width:780px;margin:0 auto;padding:48px 32px 80px;}
+    .page-header{margin-bottom:36px;animation:fadeUp .7s cubic-bezier(.16,1,.3,1) both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    .page-eyebrow{font-family:'Noto Sans Tagalog',serif;font-size:1.6rem;letter-spacing:6px;text-shadow:0 0 20px #f5c84266;margin-bottom:8px;}
+    .page-title{font-family:'Cinzel Decorative',serif;font-size:1.8rem;color:var(--gold);text-shadow:0 0 30px rgba(245,200,66,0.3);margin-bottom:6px;}
+    .page-sub{font-size:1rem;font-style:italic;color:var(--text-m);}
+    .form-card{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:36px;animation:fadeUp .7s .1s cubic-bezier(.16,1,.3,1) both;}
+    .section-label{font-family:'Cinzel',serif;font-size:0.62rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold-d);margin-bottom:14px;}
+    .divider{height:1px;background:var(--border);margin:28px 0;}
+    .field{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+    .field label{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-d);}
+    .field input,.field select,.field textarea{background:var(--input-bg);border:1.5px solid rgba(91,63,160,0.3);border-radius:12px;padding:13px 18px;font-family:'Crimson Text',serif;font-size:1rem;color:var(--text);outline:none;caret-color:var(--gold);transition:border-color .25s,box-shadow .25s;width:100%;}
+    .field input::placeholder,.field textarea::placeholder{color:var(--text-d);font-style:italic;}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold-d);box-shadow:0 0 0 3px rgba(245,200,66,0.07);}
+    .field input.error,.field textarea.error{border-color:var(--red);}
+    .field textarea{resize:vertical;min-height:90px;}
+    .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a07c1e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-color:var(--input-bg);cursor:pointer;}
+    .field select option{background:#150d2e;color:var(--text);}
+    .tags-hint{font-size:0.78rem;color:var(--text-d);font-style:italic;margin-top:2px;}
+    .feedback{border-radius:10px;padding:12px 18px;font-size:0.92rem;text-align:center;margin-bottom:16px;}
+    .feedback.error{background:rgba(255,51,102,0.1);border:1px solid rgba(255,51,102,0.25);color:var(--red);}
+    .feedback.success{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.25);color:var(--green);}
+    .loading-state{text-align:center;padding:60px 20px;}
+    .loading-glyph{font-size:2rem;color:var(--gold-d);display:block;margin-bottom:12px;animation:spin 2s linear infinite;}
+    @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+    .loading-text{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:3px;color:var(--text-d);text-transform:uppercase;}
+    .form-actions{display:flex;gap:12px;margin-top:28px;}
+    .btn-primary{flex:1;padding:15px;background:var(--gold-dim);border:1.5px solid var(--gold-d);border-radius:50px;font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:3px;color:var(--gold);cursor:pointer;text-transform:uppercase;transition:border-color .25s,box-shadow .25s;}
+    .btn-primary:hover{border-color:var(--gold);box-shadow:0 0 20px var(--gold-glow);}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+    .btn-secondary{padding:15px 24px;background:transparent;border:1.5px solid var(--border);border-radius:50px;font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:2px;color:var(--text-m);cursor:pointer;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;transition:border-color .2s,color .2s;}
+    .btn-secondary:hover{border-color:var(--border-h);color:var(--text);}
+  </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="stars-layer" id="stars"></div>
+
+<div id="app">
+  <nav>
+    <a class="nav-brand" href="/readings.html">
+      <span class="nav-baybayin">ᜆᜇ᜔ᜑᜈ᜔</span>
+      <span class="nav-title">Tadhana</span>
+    </a>
+    <div class="nav-links">
+      <a href="/readings.html" class="nav-link">Readings</a>
+      <a href="/new-reading.html" class="nav-link">New Reading</a>
+      <span class="nav-user">{{ username }}</span>
+      <div class="nav-avatar" @click="logout" title="Logout">{{ avatarLetter }}</div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">ᜊᜄ᜔ᜌᜓᜅ᜔</div>
+      <h1 class="page-title">Edit Reading</h1>
+      <p class="page-sub">Update your reading details below.</p>
+    </div>
+
+    <!-- Loading -->
+    <div class="form-card" v-if="loadingData">
+      <div class="loading-state">
+        <span class="loading-glyph">✦</span>
+        <div class="loading-text">Loading reading…</div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-card" v-else>
+      <div class="section-label">✦ &nbsp; The Question</div>
+      <div class="field">
+        <label>What is your question?</label>
+        <textarea v-model="form.question" :class="{ error: errors.question }" placeholder="What do I need to know about…" rows="2"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">✦ &nbsp; Spread Type</div>
+      <div class="field">
+        <label>Spread</label>
+        <select v-model="form.spread_type">
+          <option value="single-card">Single Card</option>
+          <option value="three-card">Three Card</option>
+          <option value="celtic-cross">Celtic Cross</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">✦ &nbsp; Details</div>
+      <div class="field">
+        <label>Tags</label>
+        <input type="text" v-model="form.tags" placeholder="career, clarity, future"/>
+        <span class="tags-hint">Separate tags with commas</span>
+      </div>
+      <div class="field">
+        <label>Personal Notes <span style="opacity:.5;">(optional)</span></label>
+        <textarea v-model="form.notes" placeholder="Write your reflections…"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="feedback" :class="feedbackType" v-if="feedback">{{ feedback }}</div>
+
+      <div class="form-actions">
+        <a href="/readings.html" class="btn-secondary">← Cancel</a>
+        <button class="btn-primary" :disabled="loading" @click="saveReading">
+          {{ loading ? 'Saving…' : '✦  Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const { createApp } = Vue;
+createApp({
+  data() {
+    return {
+      username:    localStorage.getItem('username') || '',
+      user_id:     localStorage.getItem('user_id'),
+      reading_id:  null,
+      form:        { question: '', spread_type: 'single-card', tags: '', notes: '' },
+      errors:      {},
+      feedback:    '', feedbackType: '',
+      loading:     false, loadingData: true
+    };
+  },
+  computed: {
+    avatarLetter() { return this.username ? this.username.charAt(0).toUpperCase() : '?'; }
+  },
+  methods: {
+    async loadReading() {
+      const params = new URLSearchParams(window.location.search);
+      this.reading_id = params.get('id');
+      if (!this.reading_id) { window.location.href = '/readings.html'; return; }
+      try {
+        const res  = await fetch('/api/reading/' + this.reading_id);
+        const data = await res.json();
+        if (data.error) { window.location.href = '/readings.html'; return; }
+        this.form.question    = data.question    || '';
+        this.form.spread_type = data.spread_type || 'single-card';
+        this.form.tags        = data.tags        || '';
+        this.form.notes       = data.notes       || '';
+      } catch(e) { window.location.href = '/readings.html'; }
+      this.loadingData = false;
+    },
+    async saveReading() {
+      this.errors = {}; this.feedback = '';
+      if (!this.form.question.trim()) {
+        this.errors.question = true;
+        this.feedback = 'Please enter a question.'; this.feedbackType = 'error';
+        return;
+      }
+      if (!this.form.spread_type) {
+        this.feedback = 'Please select a spread type.'; this.feedbackType = 'error';
+        return;
+      }
+      this.loading = true;
+      try {
+        const res  = await fetch('/api/readings/' + this.reading_id, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.form)
+        });
+        const data = await res.json();
+        if (data.error) {
+          this.feedback = data.error; this.feedbackType = 'error';
+        } else {
+          this.feedback = '✦ Changes saved! Redirecting…'; this.feedbackType = 'success';
+          setTimeout(() => window.location.href = '/readings.html', 1200);
+        }
+      } catch(e) {
+        this.feedback = 'Cannot reach server.'; this.feedbackType = 'error';
+      }
+      this.loading = false;
+    },
+    logout() { localStorage.clear(); window.location.href = '/login.html'; }
+  },
+  mounted() {
+    if (!this.user_id) { window.location.href = '/login.html'; return; }
+    this.loadReading();
+  }
+}).mount('#app');
+
+const sl = document.getElementById('stars');
+for (let i = 0; i < 120; i++) {
+  const s = document.createElement('div'); s.className = 'star';
+  const sz = Math.random()*1.8+0.4;
+  s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--dl:-${(Math.random()*5).toFixed(1)}s;--lo:${(Math.random()*0.1+0.03).toFixed(2)};--hi:${(Math.random()*0.5+0.25).toFixed(2)};`;
+  sl.appendChild(s);
+}
+</script>
+</body>
+</html>
