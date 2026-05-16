@@ -12,15 +12,6 @@ A Filipino-themed tarot reading web app for logging and managing personal tarot 
 
 ---
 
-## Features
-
-- User registration and login with hashed passwords
-- Create, view, edit, and delete tarot readings
-- Spread types: Single Card, Three Card, Celtic Cross
-- Tag and note support per reading
-
----
-
 ## Getting Started
 
 ### Prerequisites
